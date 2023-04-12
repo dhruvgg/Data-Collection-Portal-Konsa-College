@@ -126,57 +126,6 @@
     </div>
 
 
-	<!-- Add New Test Start -->
-
-<!-- 	<script type="text/javascript">
-		var count = 0
-		function addNewElem(name) {
-			parent = "#newRow"+name
-			output = "#"+name
-			saveData = "#saveData"+name
-			addRow = "#addRow"+name
-			count++
-			var html = ''
-			html += '<div id="inputFormRow">'
-			html += '<div class="input-group mb-3">'
-			html += `<input require type="text" name="${name}_${count}_name" id="${name}_${count}_name" class="${name}_name form-control m-input" placeholder="Enter ${name} Name" autocomplete="off" value="">`
-			html += `<input required type="text" name="${name}_${count}_link" id="${name}_${count}_link" class="${name}_link form-control m-input" placeholder="Enter ${name} Link" autocomplete="off" value="">`
-			html += '<div class="input-group-append">'
-			html += '<button id="removeRow" type="button" class="btn btn-danger">Remove</button>'
-			html += '</div>'
-			html += '</div>'
-			html += '</div>'
-
-			$(parent).append(html)
-
-			$(document).on('click', '#removeRow', function () {
-				$(this).closest('#inputFormRow').remove()
-			})
-
-			$(saveData).click(function() {
-				parent = "#newRow"+name
-				output = "#"+name
-				let arr = joinMultiFields(parent, output, name)
-				$("#"+name+"_save").html(arr)
-				$(output).val("["+arr+"]")
-			})
-		}
-
-		function joinMultiFields(parent, output, name) {
-			var arr = []
-			obj_name = $(parent).find(`:input.${name}_name.form-control`)
-			obj_link = $(parent).find(`:input.${name}_link.form-control`)
-			for (let i = 0; i <= (obj_name.length - 1); i++) {
-				if ($(obj_name[i]).val()) {
-					arr.push(`{"name": "${$(obj_name[i]).val()}", "logo_link": "${$(obj_link[i]).val()}"}`)
-				}
-			}
-			return arr
-		}
-	</script> -->
-	<!-- Add New Test End -->
-
-
 
 	<script>
 		$(document).ready(function () {

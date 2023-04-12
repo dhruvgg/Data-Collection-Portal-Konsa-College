@@ -16,16 +16,34 @@
 			visibility: collapse;
 			transform: scale(0.5);
 		}
+
 		div .mb-3 {
 		    padding: 1rem;
 		    border: 2px solid lightgray;
 		    border-radius: 1rem;
 		}
+
 		div.mb-3:hover {
 			border: 2px dotted lightgray;
 		}
+
 		label {
 			font-size: 1.3rem;
+		}
+
+		input[readonly] {
+			opacity: 0.7;
+			background-color: #e9ecef;
+			opacity: 1;
+			user-select: none;
+			cursor: not-allowed;
+			margin-bottom: 1rem;
+		}
+
+		small {
+		    font-size: 0.8rem;
+		    color: #6c757d;
+		    margin-top: 0.25rem !important;
 		}
 	</style>
 </head>
@@ -120,18 +138,20 @@
 				<input type="number" class="form-control" name="college_campus_area" id="college_campus_area" placeholder="Put campus area for college in numerals keeping standard unit only." value="123">
 			</div>
 
-			<div class="mb-3">
-				<label for="header_photo_link" class="form-label">Header Photo Link</label>
-				<input type="text" class="form-control" name="header_photo_link" id="header_photo_link"
-					placeholder="Put the link for the background banner photo." oninput="$(this).siblings('img').attr('src', $(this).val())">
-				<img class="w-100 h-auto mt-2" src="{{ url_for('static', filename='images/homepage_banner.svg') }}" alt="Header Image Link you've added is either broken or blank.">
+			<div class="mb-3 row">
+				<label for="header_photo_link" class="form-label">Header Photo Image</label>
+				<input type="text" class="form-control" required name="header_photo_link" id="header_photo_link" value="" hidden>
+				<input required class="form-control" type="file" id="header_photo_file" class="w-90">
+				<img class="w-100 h-auto mt-2" src="{{ url_for('static', filename='images/homepage_banner.svg') }}" id="header_photo_preview" alt="Header Image Link you've added is either broken or blank.">
+				<small>Only after submitting, the image is saved in DB. Wait for few a seconds giving it time to load.</small>
 			</div>
 
-			<div class="mb-3">
-				<label for="college_logo_link" class="form-label">College Logo Link</label>
-				<input type="text" class="form-control" name="college_logo_link" id="college_logo_link"
-					placeholder="Put the link for the college logo." oninput="$(this).siblings('img').attr('src', $(this).val())">
-				<img class="w-100 h-auto mt-2" src="{{ url_for('static', filename='images/homepage_banner.svg') }}" alt="Logo Image Header Image Link you've added is either broken or blank.">
+			<div class="mb-3 row">
+				<label for="college_logo_link" class="form-label">College Logo Image</label>
+				<input type="text" class="form-control" required name="college_logo_link" id="college_logo_link" value="" hidden>
+				<input required class="form-control" type="file" id="college_logo_file" class="w-90">
+				<img class="w-100 h-auto mt-2" src="{{ url_for('static', filename='images/homepage_banner.svg') }}" id="college_logo_preview" alt="Header Image Link you've added is either broken or blank.">
+				<small>Only after submitting, the image is saved in DB. Wait for few a seconds giving it time to load.</small>
 			</div>
 
 			<div class="mb-3">
@@ -270,6 +290,7 @@
                 <div id="newRowfees" data-type=1></div>
 				<button id="addRowfees" type="button" class="btn btn-info"onclick="addNewElem('fees')" title="Add New Row"><i class="bi bi-plus-square"></i></button>
 				<button id="saveDatafees" type="button" class="btn btn-warning" title="Save"><i class="bi bi-file-earmark-check"></i></button>
+				<br>
 				<small>Total needs to be added manually. Do not miss to add correct total value</small>
             </div>
 
@@ -439,6 +460,75 @@
 
 
 	<script type="text/javascript">
+
+		const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/doyci5m01/image/upload' // The URL of the Cloudinary API to upload images.
+		const cloudinaryUploadPreset = 'caoeu9ot' // Replace with your upload preset
+		const folder = 'konsa-college-college-assets'// The folder name in the Cloudinary account to upload images to.
+
+		/**
+		* Uploads an image to Cloudinary.
+		* @param {File} file - The image file to upload.
+		* @param {string} folder - The folder name to upload the image to.
+		* @param {string} subfolder - The sub-folder name to upload the image to. Genereally name of College.
+		* @param {string} name - The name of the image.
+		* @param {string} cloudinaryUrl - The Cloudinary API URL.
+		* @param {string} cloudinaryUploadPreset - The Cloudinary upload preset name.
+		* @returns {Promise<Response>} The response from the Cloudinary API.
+		* @returns {string} The URL from response of the Cloudinary API.
+		*/
+
+		async function uploadOnCloud (file, folder, subfolder, name, cloudinaryUrl, cloudinaryUploadPreset) {
+			try {
+				// Upload the image to Cloudinary
+				const formData = new FormData();
+				formData.append("file", file);
+				formData.append("public_id", `${folder}/${subfolder}/${name}`); // Add the folder to the public ID
+				formData.append('upload_preset', cloudinaryUploadPreset);
+				const cloudinaryResponse = await fetch( cloudinaryUrl, {
+						method: "POST",
+						body: formData
+					}
+				)
+				if (cloudinaryResponse.ok) {
+					const cloudinaryData = await cloudinaryResponse.json()
+					return cloudinaryData.secure_url
+				} else {
+					throw new Error('Failed to upload image to Cloudinary');
+				}
+			} catch (error) {
+				console.error(error);
+				throw new Error('Failed to upload image to Cloudinary');
+			}
+		}
+
+
+		$("#header_photo_file").on('change', async function() {
+			console.log(`Header file: ${this.files[0].name} uploaded to Cloudinary. Ready to save in DB.`)
+			try {
+				var subfolder = $("#college_uuid").val()
+				const cloudinaryData = await uploadOnCloud(this.files[0], folder, subfolder, this.files[0].name.split('.').slice(0, -1).join('.'), cloudinaryUrl, cloudinaryUploadPreset)
+				$("#header_photo_preview").attr('src', cloudinaryData)
+				$("#header_photo_link").val(cloudinaryData)
+			} catch (error) {
+				alert("Error. Check Console.")
+                console.error(error)
+			}
+        });
+
+		$("#college_logo_file").on('change', async function() {
+			console.log(`Header file: ${this.files[0].name} uploaded to Cloudinary. Ready to save in DB.`)
+			try {
+				var subfolder = $("#college_uuid").val()
+				const cloudinaryData = await uploadOnCloud(this.files[0], folder, subfolder, this.files[0].name.split('.').slice(0, -1).join('.'), cloudinaryUrl, cloudinaryUploadPreset)
+				$("#college_logo_preview").attr('src', cloudinaryData)
+				$("#college_logo_link").val(cloudinaryData)
+			} catch (error) {
+				alert("Error. Check Console.")
+                console.error(error)
+			}
+        });
+
+
 		function elementHTML(name, count) {
 			var singleEleme = ''
 			singleEleme += '<div id="inputFormRow">'
@@ -541,43 +631,29 @@
 			switch (type) {
 				case 1: // When data-type=1
 					{
-						const obj = $(parent).find(":input.form-control")
-						const obj_type = $(parent).find(`:input.${name}_type.form-control`)
-						const obj_amount = $(parent).find(`:input.${name}_amount.form-control`)
-						arr = []
-
-						for (let i = 0; i < obj_type.length; i++) {
-							const typeVal = $(obj_type[i]).val();
-							const amountVal = parseInt($(obj_amount[i]).val().match(/\d+/g)[0])
-							
-							if (typeVal && amountVal) {
-								console.log(`${`{"${typeVal}": "\u20b9${amountVal}"}`}`)
-								arr.push(`{"${typeVal}": "\u20b9${amountVal}"}`);
+						obj = $(parent).find(":input.form-control")
+						obj_type = $(parent).find(`:input.${name}_type.form-control`)
+						obj_amount = $(parent).find(`:input.${name}_amount.form-control`)
+						for (let i = 0; i <= (obj_type.length - 1); i++) {
+							if ($(obj_type[i]).val()) {
+								const amountVal = parseInt($(obj_amount[i]).val().match(/\d+/g)[0])
+								arr.push(`{"${$(obj_type[i]).val()}": "\u20b9${amountVal}"}`)
 							} else {
-								arr.push(null);
+								arr.push(null)
 							}
 						}
 					}
 					break
 				case 2:
 					{
-						const obj = $(parent).find(":input.form-control");
-						const objName = $(parent).find(`:input.${name}_name.form-control`);
-						const objDistance = $(parent).find(`:input.${name}_distance.form-control`);
-						arr = [];
-
-						for (let i = 0; i < objName.length; i++) {
-							const nameValue = $(objName[i]).val();
-							const distanceValue = parseInt($(objDistance[i]).val().match(/\d+/g)[0])
-							if (nameValue) {
-								arr.push(`{"trans": "${nameValue}", "icon": "", "dist": "${distanceValue} KM"}`)
-								// if (distanceValue.includes("KM")) {
-									// arr.push(`{"trans": "${nameValue}", "icon": "", "dist": "${distanceValue}"}`);
-								// } else {
-								// 	arr.push(`{"trans": "${nameValue}", "icon": "", "dist": "${distanceValue} KM"}`);
-								// }
+						obj = $(parent).find(":input.form-control")
+						obj_name = $(parent).find(`:input.${name}_name.form-control`)
+						obj_distance = $(parent).find(`:input.${name}_distance.form-control`)
+						for (let i = 0; i <= (obj_name.length - 1); i++) {
+							const distanceValue = parseInt($(obj_distance[i]).val().match(/\d+/g)[0])
+							if ($(obj_name[i]).val()) {
 							} else {
-								arr.push(null);
+								arr.push(null)
 							}
 						}
 					}

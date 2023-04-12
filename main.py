@@ -9,11 +9,12 @@ app.secret_key = "kcadmin123"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///comment.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['CLOUDINARY_URL'] = 'CLOUDINARY_URL=cloudinary://345185736596456:maKIpUw92_h0SVWFGBHtO57bbqo@doyci5m01'
+app.config[
+ 'CLOUDINARY_URL'] = 'CLOUDINARY_URL=cloudinary://345185736596456:maKIpUw92_h0SVWFGBHtO57bbqo@doyci5m01'
 
 db = SQLAlchemy(app)
 
-Private_Repl_URL = "https://714ba195-313b-4fba-b8cf-84ddb002db0f.id.repl.co/" # Found this Private URL in "Toggle Developers Tool" in "Webview" section inside "Resources" tab. Scroll a bit to find it with "https://*.id.repl.co/".
+Private_Repl_URL = "https://c6752e41-659a-4829-ba1b-3a9aac357be2.id.repl.co/"  # Found this Private URL in "Toggle Developers Tool" in "Webview" section inside "Resources" tab. Scroll a bit to find it with "https://*.id.repl.co/".
 
 MONGO_URI = "mongodb+srv://devTeam:FamLearn123@cluster0.uxghxpb.mongodb.net/"
 
@@ -56,25 +57,35 @@ def handle_500_error(e):
 	return render_template('500.html'), 500
 
 
-# Dashboard
-@app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
+# User Dashboard
+@app.route('/user_dashboard', methods=['GET', 'POST'])
+def user_dashboard_function():
 
-	return render_template("./Dashboard/dashboard.html")
+	return render_template("./Dashboard/user_dashboard.html")
+
+
+# Admin Dashboard
+@app.route('/admin_dashboard', methods=['GET', 'POST'])
+def admin_dashboard_function():
+
+	return render_template("./Dashboard/admin_dashboard.html",
+	                       username=session['username'],
+	                       password=session['password'])
 
 
 # Login Route
 @app.route('/', methods=['GET', 'POST'])
-def hello_world():
+def login_function():
 	if request.method == 'POST':
 		username = request.form['login_id']
 		password = request.form['login_password']
 		session['username'] = username
 		session['password'] = password
 		if (username == 'admin' and password == 'kcadmin123'):
-			return redirect(url_for("abcd"))
+			return redirect(url_for("admin_dashboard_function"))
+			# return redirect("/admin_dashboard")
 		elif (username == 'user1' and password == 'kc1234'):
-			return redirect("/dashboard")
+			return redirect("/user_dashboard")
 	return render_template('login.html')
 
 
@@ -502,7 +513,8 @@ def blogs_collection_function():
 		header_image = request.form['header_image']
 		author = request.form['author']
 		print(request.form['content'])
-		content = json.loads(request.form['content']) if request.form['content'] else None
+		content = json.loads(
+		 request.form['content']) if request.form['content'] else None
 		category_id = int(request.form['category_id'])
 
 		created_at = datetime.now()
@@ -541,7 +553,8 @@ def update_blog_function(sno):
 		subheading = request.form['subheading']
 		header_image = request.form['header_image']
 		author = request.form['author']
-		content = json.loads(request.form['content']) if request.form['content'] else None
+		content = json.loads(
+		 request.form['content']) if request.form['content'] else None
 		category_id = int(request.form['category_id'])
 
 		created_at = datetime.now()
@@ -566,7 +579,9 @@ def update_blog_function(sno):
 	# Find document based on sno & pass as q
 	q = list(blogs_collection.find({"sno": sno}))[0]
 
-	return render_template('./Blogs/blogs_update.html', blogs=q, content=q['content'])
+	return render_template('./Blogs/blogs_update.html',
+	                       blogs=q,
+	                       content=q['content'])
 
 
 # Blog [Approve]: UPDATE
@@ -574,7 +589,7 @@ def update_blog_function(sno):
 def approve_blog(sno):
 
 	updateMongoDocument(sno, {"approvedStatus": 1}, blogs_collection)
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # Blog [UnApprove]: UPDATE
@@ -582,26 +597,26 @@ def approve_blog(sno):
 def unApprove_blog(sno):
 
 	updateMongoDocument(sno, {"approvedStatus": 0}, blogs_collection)
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # Blog Data Collection Route [Delete_Admin]: DELETE
-@app.route('/delete_blog_admin/<int:sno>')
-def delete_blog_admin(sno):
+@app.route('/delete_block_admin/<int:sno>')
+def delete_block_admin(sno):
 	deleteMongoDocument(sno, blogs_collection)
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # Blogs Collection Route [Delete_User]: DELETE
-@app.route('/delete_user_blog/<int:sno>')
-def delete_user_blog_function(sno):
+@app.route('/delete_user_blogs/<int:sno>')
+def delete_user_blogs_function(sno):
 	deleteMongoDocument(sno, blogs_collection)
 	return redirect('/blogs')
 
 
 # Admin Functions
-@app.route('/adminPage', methods=['GET', 'POST'])
-def abcd():
+@app.route('/admin/approve_college', methods=['GET', 'POST'])
+def approve_college():
 
 	if request.method == "POST":
 		user_name = request.form['commenter']
@@ -630,7 +645,7 @@ def abcd():
 	nonApprovedColleges = list(collection.find({"approvedStatus": 0}))
 	approvedColleges = list(collection.find({"approvedStatus": 1}))
 
-	return render_template("approve.html",
+	return render_template("admin/approve_colleges.html",
 	                       nonApprovedColleges=nonApprovedColleges,
 	                       approvedColleges=approvedColleges,
 	                       username=session['username'],
@@ -638,47 +653,47 @@ def abcd():
 	                       allComments=allComments)
 
 
-@app.route('/delete_comment/<int:n>')
-def delete_comment(n):
+@app.route('/admin_delete_comment/<int:n>')
+def admin_delete_comment(n):
 
 	comment = Comment.query.filter_by(n=n).first()
 	db.session.delete(comment)
 	db.session.commit()
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
-@app.route('/approve_comment/<int:n>', methods=['GET', 'POST'])
-def approve_comment(n):
+@app.route('/admin_approve_comment/<int:n>', methods=['GET', 'POST'])
+def admin_approve_comment(n):
 
 	comment = Comment.query.filter_by(n=n).first()
 	print(f'S. No. {comment.n}: {comment.message} was approved.')
 	comment.commentApprovedStatus = 1
 	db.session.add(comment)
 	db.session.commit()
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # Admin Route [Approve]: UPDATE
-@app.route('/approve/<int:sno>', methods=['GET', 'POST'])
-def approve(sno):
+@app.route('/admin_approve_college/<int:sno>', methods=['GET', 'POST'])
+def admin_approve_college(sno):
 
 	updateMongoDocument(sno, {"approvedStatus": 1}, collection)
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # Admin Route [UnApprove]: UPDATE
-@app.route('/unapprove/<int:sno>', methods=['GET', 'POST'])
-def unApprove(sno):
+@app.route('/admin_unapprove_college/<int:sno>', methods=['GET', 'POST'])
+def admin_unapprove_college(sno):
 
 	updateMongoDocument(sno, {"approvedStatus": 0}, collection)
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # College Data Collection Route [Delete_Admin]: DELETE
-@app.route('/delete_admin/<int:sno>')
-def delete_admin(sno):
+@app.route('/admin_delete_college/<int:sno>')
+def admin_delete_college(sno):
 	deleteMongoDocument(sno, collection)
-	return redirect('/adminPage')
+	return redirect('/admin/approve_college')
 
 
 # Helper Route: Check for UUID Page
@@ -886,39 +901,31 @@ def new_thread():
 """
 import json
 
-def fix_json(json_str):
-    try:
-        json.loads(json_str)
-        return json_str
-    except ValueError:
-        fixed_str = ""
-        for c in json_str:
-            if c in ['{', '[', ']', '}']:
-                fixed_str += c
-            elif c == ',':
-                fixed_str += c + ' '
-            elif c == ':' and fixed_str[-1] != ' ':
-                fixed_str += ' ' + c + ' '
-            else:
-                fixed_str += c
-        try:
-            json.loads(fixed_str)
-            return fixed_str
-        except ValueError:
-            return None
-
-# Example usage:
-invalid_json = '{"foo": "bar", "baz": "qux",}'
-fixed_json = fix_json(invalid_json)
-if fixed_json is not None:
-    print("Fixed JSON: ", fixed_json)
-else:
-    print("Invalid JSON")
-
-
 @app.route('/comments', methods=['GET', 'POST'])
 def comments():
-	return render_template('./Comments/comments.html')
+
+	query = {
+	    '$or': [
+	        {
+	            'approvedStatus': 0,
+	            'positives': None,
+	            'negatives': None,
+	            'scholarships': None
+	        },
+	        {
+	            'approvedStatus': 0,
+	            'positives': [],
+	            'negatives': [],
+	            'scholarships': []
+	        }
+	    ]
+	}
+
+	# Execute the query and get the result
+	result = list(collection.find(query))
+	print(len(result))
+
+	return render_template('./Comments/comments.html', oops=result, oops_length=len(result))
 
 
 if __name__ == "__main__":
