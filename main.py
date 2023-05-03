@@ -886,7 +886,10 @@ class College:
 
 
 # Support Function: Creates new thread for Flask to run endlessly
-"""
+import requests
+from threading import Thread
+
+
 def new_thread():
 	while True:
 		try:
@@ -898,37 +901,35 @@ def new_thread():
 					print(new_req.status_code)
 		except:
 			pass
-"""
-import json
+
 
 @app.route('/comments', methods=['GET', 'POST'])
 def comments():
 
 	query = {
-	    '$or': [
-	        {
-	            'approvedStatus': 0,
-	            'positives': None,
-	            'negatives': None,
-	            'scholarships': None
-	        },
-	        {
-	            'approvedStatus': 0,
-	            'positives': [],
-	            'negatives': [],
-	            'scholarships': []
-	        }
-	    ]
+	 '$or': [{
+	  'approvedStatus': 0,
+	  'positives': None,
+	  'negatives': None,
+	  'scholarships': None
+	 }, {
+	  'approvedStatus': 0,
+	  'positives': [],
+	  'negatives': [],
+	  'scholarships': []
+	 }]
 	}
 
 	# Execute the query and get the result
 	result = list(collection.find(query))
 	print(len(result))
 
-	return render_template('./Comments/comments.html', oops=result, oops_length=len(result))
+	return render_template('./Comments/comments.html',
+	                       oops=result,
+	                       oops_length=len(result))
 
 
 if __name__ == "__main__":
 	# app.run(debug=True)
-	# Thread(target=new_thread, daemon=True).start()
-	app.run(host='0.0.0.0', port=81)
+	Thread(target=new_thread, daemon=True).start()
+	app.run(host='0.0.0.0', port=85)
