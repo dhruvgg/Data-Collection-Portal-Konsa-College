@@ -27,6 +27,7 @@ COUNSELINGS_MONGO_COLLECTION = "councellings"
 NEWS_MONGO_COLLECTION = "news"
 EXAMS_MONGO_COLLECTION = "exams"
 BLOGS_MONGO_COLLECTION = "blogs"
+TOOLS_MONGO_COLLECTION = "tools"
 
 # Get the database
 dbs = client[MONGO_DATABASE]
@@ -37,6 +38,7 @@ counselings_collection = dbs[COUNSELINGS_MONGO_COLLECTION]
 news_collection = dbs[NEWS_MONGO_COLLECTION]
 exams_collection = dbs[EXAMS_MONGO_COLLECTION]
 blogs_collection = dbs[BLOGS_MONGO_COLLECTION]
+tools_collection = dbs[TOOLS_MONGO_COLLECTION]
 
 
 # 404 Error Handler
@@ -341,6 +343,116 @@ def delete_user_counselings_function(sno):
 
 
 """
+TOOLS FUNCTIONS
+"""
+
+
+# Tool Collection Route [Index]: CREATE, READ
+@app.route('/tools', methods=['GET', 'POST'])
+def add_tool():
+
+	if request.method == "POST":
+		tool_heading = request.form['tool_heading']
+		tool_icon_link = request.form['tool_icon_link']
+		tool_route = request.form['tool_route']
+		tool_sub_heading = request.form['tool_sub_heading']
+		published = request.form['published']
+		payment_status_amount = request.form['payment_status_amount']
+		payment_status_paid = request.form['payment_status_paid']
+
+		nextSno = list(tools_collection.find({}))[-1]["sno"] + 1
+		toolsDocument = {
+		 "toolHeading": tool_heading,
+		 "toolRoute": "/" + tool_route,
+		 "toolSubHeading": tool_sub_heading,
+		 "toolIconLink": tool_icon_link,
+		 "paymentStatus": {
+		  "paid": payment_status_paid,
+		  "amount": payment_status_amount
+		 },
+		 "published": published,
+		 "sno": nextSno,
+		}
+		print(toolsDocument)
+
+		# Insert New Data In College DB
+		tools_inserted_id = tools_collection.insert_one(toolsDocument).inserted_id
+
+		print(tools_inserted_id)
+
+	print("here in tools")
+
+	return render_template("./Tools/tools.html",
+	                       all_tools=list(tools_collection.find({})),
+	                       username=session['username'],
+	                       password=session['password'])
+
+
+# Tool Data Collection Route [Update]: UPDATE
+@app.route('/update_tools/<int:sno>', methods=['GET', 'POST'])
+def update_tools_function(sno):
+
+	if request.method == 'POST':
+		tool_heading = request.form['tool_heading']
+		tool_icon_link = request.form['tool_icon_link']
+		tool_route = request.form['tool_route']
+		tool_sub_heading = request.form['tool_sub_heading']
+		published = request.form['published']
+		payment_status_amount = request.form['payment_status_amount']
+		payment_status_paid = request.form['payment_status_paid']
+
+		nextSno = list(tools_collection.find({}))[-1]["sno"] + 1
+		q = {
+		 "toolHeading": tool_heading,
+		 "toolRoute": "/" + tool_route,
+		 "toolSubHeading": tool_sub_heading,
+		 "toolIconLink": tool_icon_link,
+		 "paymentStatus": {
+		  "paid": payment_status_paid,
+		  "amount": payment_status_amount
+		 },
+		 "published": published,
+		 "sno": nextSno,
+		}
+		print(q)
+
+		updateMongoDocument(sno, q, tools_collection)
+
+		return redirect('/tools')
+
+	# Find document based on sno & pass as q
+	q = list(tools_collection.find({"sno": sno}))[0]
+
+	return render_template('./Tools/tools_update.html',
+	                       tools=q,
+	                       username=session['username'],
+	                       password=session['password'])
+
+
+# Counseling Collection Route [Delete_User]: DELETE
+@app.route('/delete_admin_tools/<int:sno>')
+def delete_admin_tools_function(sno):
+	deleteMongoDocument(sno, tools_collection)
+	return redirect('/tools')
+
+
+# Tool [Approve]: UPDATE
+@app.route('/publish_tool/<int:sno>', methods=['GET', 'POST'])
+def publish_tool(sno):
+
+	updateMongoDocument(sno, {"published": True}, tools_collection)
+	return redirect('/tools#draftToolsTab')
+
+
+# Tool [UnApprove]: UPDATE
+@app.route('/unpublish_tool/<int:sno>', methods=['GET', 'POST'])
+def unPublish_tool(sno):
+
+	updateMongoDocument(sno, {"published": False}, tools_collection)
+	return redirect('/tools#approvedToolsTab')
+
+
+"""
 NEWS FUNCTIONS
 """
 
@@ -530,7 +642,7 @@ def blogs_collection_function():
 		 "created_at": created_at,
 		 "category_id": category_id,
 		 "sno": nextSno,
-		 "approvedStatus": False
+		 "approvedStatus": 0
 		}
 		print(blogsDocument)
 
@@ -568,7 +680,7 @@ def update_blog_function(sno):
 		 "created_at": created_at,
 		 "category_id": category_id,
 		 "sno": sno,
-		 "approvedStatus": False
+		 "approvedStatus": 0
 		}
 		print(q)
 
@@ -589,7 +701,7 @@ def update_blog_function(sno):
 def approve_blog(sno):
 
 	updateMongoDocument(sno, {"approvedStatus": 1}, blogs_collection)
-	return redirect('/admin/approve_college')
+	return redirect('/admin/approve_blogs')
 
 
 # Blog [UnApprove]: UPDATE
@@ -597,24 +709,27 @@ def approve_blog(sno):
 def unApprove_blog(sno):
 
 	updateMongoDocument(sno, {"approvedStatus": 0}, blogs_collection)
-	return redirect('/admin/approve_college')
+	return redirect('/admin/approve_blogs')
 
 
 # Blog Data Collection Route [Delete_Admin]: DELETE
-@app.route('/delete_block_admin/<int:sno>')
-def delete_block_admin(sno):
+@app.route('/delete_blog_admin/<int:sno>')
+def delete_blog_admin(sno):
 	deleteMongoDocument(sno, blogs_collection)
-	return redirect('/admin/approve_college')
+	return redirect('/admin/approve_blogs')
 
 
 # Blogs Collection Route [Delete_User]: DELETE
-@app.route('/delete_user_blogs/<int:sno>')
-def delete_user_blogs_function(sno):
+@app.route('/delete_blog_user/<int:sno>')
+def delete_blog_user_function(sno):
 	deleteMongoDocument(sno, blogs_collection)
 	return redirect('/blogs')
 
 
-# Admin Functions
+## Admin Functions
+
+
+# Admin Approve Colleges
 @app.route('/admin/approve_college', methods=['GET', 'POST'])
 def approve_college():
 
@@ -635,6 +750,7 @@ def approve_college():
 		                  message=message,
 		                  date_created=date_created,
 		                  commentApprovedStatus=0)
+		print(user_name, message)
 		db.session.add(comment)
 		db.session.commit()
 
@@ -651,6 +767,69 @@ def approve_college():
 	                       username=session['username'],
 	                       password=session['password'],
 	                       allComments=allComments)
+
+
+# Admin Approve Colleges
+@app.route('/admin/approve_blog', methods=['GET', 'POST'])
+def admin_approve_blog():
+
+	if request.method == "POST":
+		user_name = request.form['commenter']
+		sno = request.form['sno']
+		message = request.form['message']
+
+		date_created = datetime.now()
+
+		last_comment = Comment.query.order_by(Comment.n.desc()).first()
+		next = (last_comment.n + 1) if last_comment else 0
+
+		print(f'{next}. {user_name} wrote {message} at {date_created}')
+		comment = Comment(user_name=user_name,
+		                  sno=sno,
+		                  n=next,
+		                  message=message,
+		                  date_created=date_created,
+		                  commentApprovedStatus=0)
+		print(user_name, message)
+		db.session.add(comment)
+		db.session.commit()
+
+	allComments = Comment.query.all()
+
+	print(f'Total Comments: {len(allComments)}')
+
+	nonApprovedBlogs = list(blogs_collection.find({"approvedStatus": 0}))
+	approvedBlogs = list(blogs_collection.find({"approvedStatus": 1}))
+
+	return render_template("admin/approve_blogs.html",
+	                       nonApprovedBlogs=nonApprovedBlogs,
+	                       approvedBlogs=approvedBlogs,
+	                       username=session['username'],
+	                       password=session['password'],
+	                       allComments=allComments)
+
+
+# Admin Route Blog [Approve]: UPDATE
+@app.route('/admin_approve_blog/<int:sno>', methods=['GET', 'POST'])
+def admin_approve_blog_function(sno):
+
+	updateMongoDocument(sno, {"approvedStatus": 1}, blogs_collection)
+	return redirect('/admin/approve_blog')
+
+
+# Admin Route Blog [UnApprove]: UPDATE
+@app.route('/admin_unapprove_blog/<int:sno>', methods=['GET', 'POST'])
+def admin_unapprove_blog(sno):
+
+	updateMongoDocument(sno, {"approvedStatus": 0}, blogs_collection)
+	return redirect('/admin/approve_blog')
+
+
+# Blog Data Collection Route [Delete_Admin]: DELETE
+@app.route('/admin_delete_blog/<int:sno>')
+def admin_delete_blog(sno):
+	deleteMongoDocument(sno, blogs_collection)
+	return redirect('/admin/approve_blog')
 
 
 @app.route('/admin_delete_comment/<int:n>')
@@ -886,10 +1065,7 @@ class College:
 
 
 # Support Function: Creates new thread for Flask to run endlessly
-import requests
-from threading import Thread
-
-
+"""
 def new_thread():
 	while True:
 		try:
@@ -901,28 +1077,20 @@ def new_thread():
 					print(new_req.status_code)
 		except:
 			pass
+"""
+
+
+@app.route('/test', methods=['GET'])
+def test():
+
+	return render_template('admin/test.html')
 
 
 @app.route('/comments', methods=['GET', 'POST'])
 def comments():
 
-	query = {
-	 '$or': [{
-	  'approvedStatus': 0,
-	  'positives': None,
-	  'negatives': None,
-	  'scholarships': None
-	 }, {
-	  'approvedStatus': 0,
-	  'positives': [],
-	  'negatives': [],
-	  'scholarships': []
-	 }]
-	}
-
 	# Execute the query and get the result
-	result = list(collection.find(query))
-	print(len(result))
+	result = list(collection.find())
 
 	return render_template('./Comments/comments.html',
 	                       oops=result,
@@ -931,5 +1099,5 @@ def comments():
 
 if __name__ == "__main__":
 	# app.run(debug=True)
-	Thread(target=new_thread, daemon=True).start()
-	app.run(host='0.0.0.0', port=85)
+	# Thread(target=new_thread, daemon=True).start()
+	app.run(host='0.0.0.0', port=81)

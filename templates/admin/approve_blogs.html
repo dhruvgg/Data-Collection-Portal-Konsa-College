@@ -31,34 +31,27 @@
 		<!-- Nav tabs -->
 		<ul class="nav nav-tabs" role="tablist">
 		    <li class="nav-item">
-		        <a class="nav-link d-flex active" data-bs-toggle="tab" href="#draftCollegesTab" role="tab">
+		        <a class="nav-link d-flex active" data-bs-toggle="tab" href="#draftBlogsTab" role="tab">
 		            <span><i class="bi bi-house-x-fill"></i>
 		            </span>
-		            <span class="d-none d-md-block ms-2">Draft Colleges</span>
+		            <span class="d-none d-md-block ms-2">Draft Blogs</span>
 		        </a>
 		    </li>
 		    <li class="nav-item">
-		        <a class="nav-link d-flex" data-bs-toggle="tab" href="#approvedCollegesTab" role="tab">
+		        <a class="nav-link d-flex" data-bs-toggle="tab" href="#approvedBlogsTab" role="tab">
 		            <span><i class="bi bi-house-check"></i>
 		            </span>
-		            <span class="d-none d-md-block ms-2">Approved Colleges</span>
-		        </a>
-		    </li>
-		    <li class="nav-item">
-		        <a class="nav-link d-flex" data-bs-toggle="tab" href="#commentsTab" role="tab">
-		            <span><i class="bi bi-chat-right-text-fill"></i>
-		            </span>
-		            <span class="d-none d-md-block ms-2">Comments</span>
+		            <span class="d-none d-md-block ms-2">Approved Blogs</span>
 		        </a>
 		    </li>
 		</ul>
 		<!-- Tab panes -->
 		<div class="tab-content">
-		    <div class="tab-pane active" id="draftCollegesTab" role="tabpanel">
-				<h1>Draft Colleges</h1>
-				{% if nonApprovedColleges|length==0 %}
+		    <div class="tab-pane active" id="draftBlogsTab" role="tabpanel">
+				<h1>Draft Blogs</h1>
+				{% if nonApprovedBlogs|length==0 %}
 				<div class="alert alert-dark" role="alert">
-					No Pending Colleges to Approve!!
+					No Pending Blogs to Approve!!
 				</div>
 				{% else %}
 		        <table class="table" id="draftTable">
@@ -70,15 +63,15 @@
 				        </tr>
 		            </thead>
 		            <tbody>
-		                {% for college in nonApprovedColleges %}
+		                {% for blog in nonApprovedBlogs %}
 		                <tr>
 		                    <td scope="row"><strong>{{loop.index}}</strong></td>
-		                    <td scope="row">{{college.college_name}}</td>
+		                    <td scope="row">{{blog.title}}</td>
 		                    <td>
-								<a title="Delete" href="/admin_delete_college/{{college.sno}}" type="button" class="btn btn-danger btn-sm mx-1" onclick="return confirm('Are you sure you want to delete this item? This would permanently delete this data. Be careful little sunshine!')"><i class="bi bi-trash"></i></a>
-								<a title="Approve" href="/admin_approve_college/{{college.sno}}" type="button" class="btn btn-success btn-sm mx-1"><i class="bi bi-plus-circle"></i></a>
-								<a title="Preview" href="https://konsa-college-website.vercel.app/admin/{{college.college_uuid}}?password=FamLearn123" class="btn btn-info btn-sm mx-1"><i class="bi bi-eye-fill"></i></a>
-								<a title="Add a comment" class="btn btn-dark btn-sm mx-1" data="{{college.sno}}" onclick='{$("#comment").removeClass(function(){return $(this).hasClass("invisible") ? "invisible" : ""; }); $("#comment").find("#sno").val("{{college.sno}}");}'><i class="bi bi-chat-left-dots-fill"></i></a>
+								<a title="Delete" href="/delete_blog_admin/{{blog.sno}}" type="button" class="btn btn-danger btn-sm mx-1" onclick="return confirm('Are you sure you want to delete this item? This would permanently delete this data. Be careful little sunshine!')"><i class="bi bi-trash"></i></a>
+								<a title="Approve" href="/admin_approve_blog/{{blog.sno}}" type="button" class="btn btn-success btn-sm mx-1"><i class="bi bi-plus-circle"></i></a>
+								<a title="Preview" href="https://konsa-college-website.vercel.app/blogs" class="btn btn-info btn-sm mx-1"><i class="bi bi-eye-fill"></i></a>
+								<!-- <a title="Add a comment" class="btn btn-dark btn-sm mx-1" data="{{blog.sno}}" onclick='{$("#comment").removeClass(function(){return $(this).hasClass("invisible") ? "invisible" : ""; }); $("#comment").find("#sno").val("{{blog.sno}}");}'><i class="bi bi-chat-left-dots-fill"></i></a> -->
 		                    </td>
 		                </tr>
 		                {% endfor %}
@@ -87,11 +80,11 @@
 				{% endif %}
 		    </div>
 
-			<div class="tab-pane" id="approvedCollegesTab" role="tabpanel">
-				<h1>Approved Colleges</h1>
-				{% if approvedColleges|length==0 %}
+			<div class="tab-pane" id="approvedBlogsTab" role="tabpanel">
+				<h1>Approved Blogs</h1>
+				{% if approvedBlogs|length==0 %}
 				<div class="alert alert-dark" role="alert">
-					No College yet Approved !!!
+					No Blogs yet Approved !!!
 				</div>
 				{% else %}
 				<table class="table" id="approvedTable">
@@ -103,15 +96,15 @@
 						</tr>
 					</thead>
 					<tbody>
-						{% for college in approvedColleges %}
+						{% for blog in approvedBlogs %}
 						<tr>
 							<td scope="row"><strong>{{loop.index}}</strong></td>
-							<td scope="row">{{college.college_name}}</td>
+							<td scope="row">{{blog.title}}</td>
 							<td>
-								<a title="Delete" href="/admin_delete_college/{{college.sno}}" type="button" class="btn btn-danger btn-sm mx-1" onclick="return confirm('Are you sure you want to delete this item? This would permanently delete this data. Be careful little sunshine!')"><i class="bi bi-trash"></i></a>
-								<a title="Un-Approve" href="/admin_unapprove_college/{{college.sno}}" type="button" class="btn btn-success btn-sm mx-1"><i class="bi bi-dash-circle"></i></a>
-								<a title="Preview" href="https://konsa-college-website.vercel.app/admin/{{college.college_uuid}}?password=FamLearn123" class="btn btn-info btn-sm mx-1"><i class="bi bi-eye-fill"></i></a>
-								<a class="btn btn-dark btn-sm mx-1" onclick='$("#comment").removeClass(function(){return $(this).hasClass("invisible") ? "invisible" : "";});'><i class="bi bi-chat-left-dots-fill"></i></a>
+								<a title="Delete" href="/delete_blog_admin/{{blog.sno}}" type="button" class="btn btn-danger btn-sm mx-1" onclick="return confirm('Are you sure you want to delete this item? This would permanently delete this data. Be careful little sunshine!')"><i class="bi bi-trash"></i></a>
+								<a title="Un-Approve" href="/admin_unapprove_blog/{{blog.sno}}" type="button" class="btn btn-success btn-sm mx-1"><i class="bi bi-dash-circle"></i></a>
+								<a title="Preview" href="https://konsa-college-website.vercel.app/blogs" class="btn btn-info btn-sm mx-1"><i class="bi bi-eye-fill"></i></a>
+								<!-- <a class="btn btn-dark btn-sm mx-1" onclick='$("#comment").removeClass(function(){return $(this).hasClass("invisible") ? "invisible" : "";});'><i class="bi bi-chat-left-dots-fill"></i></a> -->
 							</td>
 						</tr>
 						{% endfor %}
@@ -120,72 +113,16 @@
 				{% endif %}
 			</div>
 
-			<div class="tab-pane" id="commentsTab" role="tabpanel" style="background-color: #ad655f;">
-		        <!-- 	Footer Comment Section Start -->
-				<footer>
-					<section>
-					{% if allComments|length==0 %}
-					<div class="alert alert-dark" role="alert">
-						No Comments !!!
-						Make one...
-					</div>
-					{% else %}
-					  <div class="container my-5 py-5">
-						<div class="row d-flex justify-content-center">
-						  <div class="col-md-12 col-lg-10">
-							<div class="card text-dark">
-								<div class="p4" style="padding: 1rem 0rem 0rem 1rem;">
-									<h4 class="mb-0">Recent comments</h4>
-									<p class="fw-light mb-4 pb-2">Latest Comments section by users</p>
-								</div>
-							{% for comment in allComments %}
-							  <div class="card-body p-4">
-								<div class="d-flex flex-start">
-								  <img class="rounded-circle shadow-1-strong me-3"
-									src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/img%20(23).webp" alt="avatar" width="60"
-									height="60" />
-								  <div class="w-100">
-									<h6 class="fw-bold mb-1">{{comment.user_name}}</h6>
-									<div class="d-flex align-items-center mb-3">
-									  <p class="mb-0">
-										{{ comment.date_created.strftime('%d %B %Y') }}
-									  	{% if comment.commentApprovedStatus == '1' %}
-											<span class="badge bg-success">Approved</span>
-										{% else %}
-											<span class="badge bg-warning">Pending</span>
-										{% endif %}
-									  </p>
-									  <a href="/admin_delete_comment/{{comment.n}}" class="link-muted"><i class="bi bi-trash3-fill ms-2"></i></a>
-									  {% if comment.commentApprovedStatus == '0' %}<a href="/admin_approve_comment/{{comment.n}}" class="link-muted"><i class="bi bi-check-square ms-2"></i></a>{% endif %}
-									  <a href="/update/{{comment.sno}}" class="link-muted"><i class="bi bi-box-arrow-up-right ms-2"></i></a>
-									</div>
-									<p class="mb-0"  style="word-wrap: break-word;word-break: break-word;">
-									  {{comment.message}}
-									</p>
-								  </div>
-								</div>
-							  </div>
-							  <hr class="my-0" />
-							{% endfor %}
-							</div>
-						  </div>
-						</div>
-					  </div>
-					{% endif %}
-					</section>
-				  </footer>
-				<!-- 	Footer Comment Section End -->
-		    </div>
 		</div>
 	</div>
 	<!-- Nav Tabs End -->
 
 	<!-- 	Comment Start -->
-	<div id="comment" class="comment w-100 position-fixed invisible" style="z-index: 1; top: 20%;">
+	<!-- <div id="comment" class="comment w-100 position-fixed invisible" style="z-index: 1; top: 20%;">
 		<div class="d-flex justify-content-center">
 		  <div class="col-md-12 col-lg-10 col-xl-8">
 			<div class="card py-3 shadow-lg" style="background-color: rgba(0,0,0, 0.3);backdrop-filter: blur(10px);">
-			  <form action="/adminPage" method="POST">
+			  <form action="approve_blog" method="POST">
 				  <div class="card-footer py-3 border-0">
 					<div class="d-flex flex-start w-100">
 					  <img class="rounded-circle shadow-1-strong me-3 d-none d-md-block"
@@ -209,7 +146,7 @@
 			</div>
 		  </div>
 		</div>
-	  </div>
+	  </div> -->
 	<!-- 	Comment End -->
 
 	<script>
