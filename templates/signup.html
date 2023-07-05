@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Registration Page</title>
+</head>
+<style>
+    #submitDiv{
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: #ffffff;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+    }
+    #submitDiv:hover{
+        background-color: #45a049;
+    }
+    #submitDiv:active{
+        background-color: #3e8e41;
+    }
+
+  body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a;
+  font-family: "lato", sans-serif;
+  
+  /* background-color: #222; */
+  color: #001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  
+}
+
+  .signupFrm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+  .form {
+  background-color: white;
+  width: 400px;
+  border-radius: 8px;
+  padding: 20px 40px;
+  box-shadow: 0 10px 25px rgba(92, 99, 105, .2);
+}
+
+.title {
+  font-size: 50px;
+  margin-bottom: 50px;
+}
+
+  .form-group {
+  position: relative;
+  height: 45px;
+  width: 90%;
+  margin-bottom: 17px;
+}
+
+  .input {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #DADCE0;
+  border-radius: 7px;
+  font-size: 16px;
+  padding: 0 20px;
+  outline: none;
+  background: none;
+  z-index: 1;
+}
+
+
+::placeholder {
+  color: transparent;
+}
+
+  .label {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 0 4px;
+  background-color: white;
+  color: #DADCE0;
+  font-size: 16px;
+  transition: 0.5s;
+  z-index: 0;
+}
+
+
+  .submitBtn {
+  display: block;
+  margin-left: auto;
+  padding: 15px 30px;
+  border: none;
+  background-color: purple;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 30px;
+}
+
+.submitBtn:hover {
+  background-color: #9867C5;
+  transform: translateY(-2px);
+}
+
+  .input:focus + .label {
+  top: -7px;
+  left: 3px;
+  z-index: 10;
+  font-size: 14px;
+  font-weight: 600;
+  color: purple;
+}
+
+  .input:focus {
+  border: 2px solid purple;
+}
+
+  .input:not(:placeholder-shown)+ .label {
+  top: -7px;
+  left: 3px;
+  z-index: 10;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+  @keyframes roam {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(100vw, 100vh);
+  }
+}
+
+.dotted-circles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dotted-circles::before,
+.dotted-circles::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: cyan;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.dotted-circles::before {
+  animation: roam 10s infinite linear;
+}
+
+.dotted-circles::after {
+  animation: roam 8s infinite linear reverse;
+}
+
+.dotted-circles::before {
+  top: 0;
+  left: 0;
+}
+
+.dotted-circles::after {
+  top: 100%;
+  left: 100%;
+}
+  
+</style>
+<body>
+    <!-- <form action="/sign_up" method="POST" id="formElement">
+        <div class="main">
+            <div>
+                <label>Name</label>
+                <input name="name" placeholder="name" id="name" type="name" />
+            </div>
+            
+            <div>
+                <label>Email</label>
+                <input name="email" placeholder="Email" id="email" type="email" />
+            </div>
+
+
+  
+            <div>
+                <label>Password</label>
+                <input name="password" placeholder="Password" id="password" type="password" />
+               <div>
+                <label hidden>UUID</label>
+                <input name="uuid" id="uuid"hidden/>
+               </div> 
+                
+    
+            </div>
+            
+             <!-- <button onclick="register()" id="preventButton">Sign up</button> -->
+          <!-- <div id="submitDiv">
+            Submit using div
+          </div> -->
+
+            <!-- <button id="submit_button" type="submit" >Actual submit</button> -->
+
+  
+    </form>
+    
+
+  <div class="signupFrm">
+    <form action="/sign_up" method="POST" id="formElement" class="form">
+      <h1 class="title">Sign up</h1>
+      
+      <div class="form-group">
+        <label for="name" class="label">Name:</label>
+        <input type="name" class="input" id="name" name="name" placeholder="Enter your name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email" class="label">Email:</label>
+        <input type="email" class="input" id="email" name="email" placeholder="Enter your email" required>
+      </div>
+      
+      <div class="form-group">
+        
+        <label for="password" class="label">Password:</label>
+        <input type="password" class="input" id="password" name="password" placeholder="Enter your password" required>
+
+       <div class="form-group">
+        
+        <label hidden></label>
+        <input name="uuid" id="uuid" hidden/>
+      </div>
+      
+      </div>
+      <div id="submitDiv">
+            Submit using div
+          </div>
+    </form>
+  </div>
+  
+</body>
+<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+<script>
+    const firebaseApp = firebase.initializeApp({
+    apiKey: "AIzaSyBcFsiJXV1Am1XL0OXUWsqs9ykipXU1zRQ",
+    authDomain: "authenticatepy-e2573.firebaseapp.com",
+    projectId: "authenticatepy-e2573",
+    storageBucket: "authenticatepy-e2573.appspot.com",
+    messagingSenderId: "759892034823",
+    appId: "1:759892034823:web:0c667fe6999f2294be31a2",
+    measurementId: "G-0YCW28VTWF"
+});
+
+const auth = firebaseApp.auth();
+const submit_div=document.getElementById("submitDiv")
+const form_element=document.getElementById("formElement")
+
+submit_div.addEventListener('click', register);
+// function submitForm(){
+    // form_element.submit();
+// }
+
+// document.getElementById("submit_button").addEventListener("click",(event)=>{
+//     event.preventDefault()
+// })
+
+function register(){
+    alert("inside register")
+
+    
+    const email = document.getElementById('email').value
+    const password =  document.getElementById('password').value
+    // var uuid = document.getElementById("uuid").value
+
+    localStorage.setItem("Password", password)
+    localStorage.setItem("Email", email)
+    
+    auth.createUserWithEmailAndPassword(email, password)
+    .then((res) => {
+        console.log(res.user)
+        const user_id=res.user.uid
+        // var uuid=document.getElementById("uuid").value
+        // uuid =res.user.uid
+        document.getElementById("uuid").value = res.user.uid
+        // console.log(uuid.value)
+        // document.getElementById("submit_button").click()
+        setTimeout(() => {
+            // document.getElementById("submit_button").click()
+            form_element.submit();
+        }, 2000);
+        // 
+        
+    })
+    .catch((err) => {
+        alert(err.message)
+        console.log(err.code)
+        console.log(err.message)
+    })
+
+    // document.getElementById("submit_button").click()
+
+}
+
+</script>
+</html>

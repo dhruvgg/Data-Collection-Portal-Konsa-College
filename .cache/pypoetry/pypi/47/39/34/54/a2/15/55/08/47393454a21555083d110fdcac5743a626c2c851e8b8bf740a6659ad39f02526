@@ -1,0 +1,1 @@
+9999999999{"name": "firebase", "version": "4.0.1", "summary": "Python interface to the Google's Firebase REST APIs", "platform": null, "requires_dist": ["requests"], "requires_python": "", "files": [], "_cache_version": "1.0.0"}

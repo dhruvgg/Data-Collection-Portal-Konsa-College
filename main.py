@@ -1,10 +1,29 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+
+import os
+from flask import Flask, redirect, url_for, render_template, request, session, flash, jsonify
 import pymongo, json
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
-from datetime import datetime
+from datetime import timedelta, datetime
+import pyrebase
 
 app = Flask(__name__)
+
+config = {
+    'apiKey': "AIzaSyBcFsiJXV1Am1XL0OXUWsqs9ykipXU1zRQ",
+    'authDomain': "authenticatepy-e2573.firebaseapp.com",
+    'projectId': "authenticatepy-e2573",
+    'storageBucket': "authenticatepy-e2573.appspot.com",
+    'messagingSenderId': "759892034823",
+    'appId': "1:759892034823:web:0c667fe6999f2294be31a2",
+    'measurementId': "G-0YCW28VTWF",
+    'databaseURL' : ""
+  }
+
+firebase = pyrebase.initialize_app(config)
+auth = firebase.auth()
+
+
 app.secret_key = "kcadmin123"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///comment.db"
@@ -13,6 +32,41 @@ app.config[
  'CLOUDINARY_URL'] = 'CLOUDINARY_URL=cloudinary://345185736596456:maKIpUw92_h0SVWFGBHtO57bbqo@doyci5m01'
 
 db = SQLAlchemy(app)
+
+
+class users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)    
+    uuid = db.Column(db.String(36), unique=True, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+
+    def __init__(self, name, email, uuid):                                 #include password in parameters
+        self.name = name
+        self.email = email
+        self.uuid = uuid
+ 
+    def add_login_timestamp(self, source=None):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if self.timestamp:
+            self.timestamp = f"{now}"
+            
+        else:
+            self.timestamp = now
+
+        if source == 'login_function':
+            self.update_login_logs_file()  # Update the login log file
+                
+
+    def get_login_timestamps(self):
+        return self.timestamp.split(",") if self.timestamp else []
+
+    def update_login_logs_file(self):
+        logs_file_path = os.path.join(os.path.dirname(__file__), "Logs/rLoginLogs.txt")
+        with open(logs_file_path, "a") as file:
+            file.write(f"{self.name}: {self.get_login_timestamps()}\nEmail: {self.email}\n")
+
 
 Private_Repl_URL = "https://c6752e41-659a-4829-ba1b-3a9aac357be2.id.repl.co/"  # Found this Private URL in "Toggle Developers Tool" in "Webview" section inside "Resources" tab. Scroll a bit to find it with "https://*.id.repl.co/".
 
@@ -75,22 +129,103 @@ def admin_dashboard_function():
 	                       password=session['password'])
 
 
+#Sign_up Route
+@app.route('/sign_up', methods=['POST', 'GET'])
+def sign_up():
+    if request.method == "POST":
+        session.permanent =  True
+
+        name=request.form.get('name')
+        session['name']=name
+
+        email = request.form.get('email')
+        session['email']=email
+
+        password=request.form.get('password')
+        # session['password']=password
+
+        uuid=request.form.get("uuid")
+        session['uuid']=uuid
+        # new_user = auth.create_user_with_email_and_password(email,password)
+        found_user = users.query.filter_by(email = email).first()
+
+        if found_user:
+                session["uuid"] = found_user.uuid
+        else: 
+            # usr = users(user, "")
+            # print("abcd")
+            found_user = users(email=email, name=name, uuid=uuid)
+            db.session.add(found_user)
+            db.session.commit()
+            now=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_signup_timestamp(name, email, now)
+
+        return redirect(url_for("login_function")) 
+    else:
+        if "user" in session:
+            flash(f"You are already Logged In!!!")
+        return render_template("signup.html")
+
+
+def log_signup_timestamp(name, email, timestamp):
+    logs_file_path = os.path.join(os.path.dirname(__file__), "Logs/rSignupLogs.txt")
+    with open(logs_file_path, "a") as file:
+            file.write(f"Acount Created:{name},\n{timestamp}\nEmail: {email}\n")
+
+
+#CRUD operations log file function
+def CRUD_log(name, email, timestamp, operation):
+    logs_file_path = os.path.join(os.path.dirname(__file__), "Logs/rCRUDlogs.txt")
+    with open(logs_file_path, "a") as file:
+            file.write(f"Acount Created:{name},\n{timestamp}\nEmail: {email}\nOperation Performed: {operation}\n#########")
+
+# Login Route
+# @app.route('/', methods=['GET', 'POST'])
+# def login_function():
+# 	if (request.method == 'POST'):
+#     # session.permanent = True
+# 	  username = request.form['login_id']
+# 	  password = request.form['login_password']
+# 	  session['username'] = username
+# 	  session['password'] = password
+# 	# 	if (username == 'admin' and password == 'kcadmin123'):
+# 	# 		return redirect(url_for("admin_dashboard_function"))
+# 	# 		# return redirect("/admin_dashboard")
+# 	# 	elif (username == 'user1' and password == 'kc1234'):
+# 	# 		return redirect("/user_dashboard")
+# 	# return render_template('login.html')    
+#     user=auth.sign_in_with_email_and_password(username, password)
+#     found_user=users.query.filter_by(email=username).first()
+#     # print(found_user)
+#     session['user']=found_user.email
+#     found_user.add_login_timestamp("login")
+
+#     return redirect(url_for("user"))
+    
+#   else:
+#       return redirect(url_for("sign_up"))
+
 # Login Route
 @app.route('/', methods=['GET', 'POST'])
 def login_function():
-	if request.method == 'POST':
-		username = request.form['login_id']
-		password = request.form['login_password']
-		session['username'] = username
-		session['password'] = password
-		if (username == 'admin' and password == 'kcadmin123'):
-			return redirect(url_for("admin_dashboard_function"))
-			# return redirect("/admin_dashboard")
-		elif (username == 'user1' and password == 'kc1234'):
-			return redirect("/user_dashboard")
-	return render_template('login.html')
+    if request.method == 'POST':
+        session.permanent = True
+        email = request.form['login_id']
+        password = request.form['login_password']
+        session['email'] = email
+        session['password'] = password
 
-
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
+            session['user'] = user['email']
+            found_user = users.query.filter_by(email=email).first()
+            found_user.add_login_timestamp("login_function")
+            return redirect("/user_dashboard")
+        except:
+            flash('Invalid email or password. Please try again.')
+            return redirect(url_for('login_function'))
+    else:
+        return render_template("login.html")
 """
 COLLEGE FUNCTIONS
 """
@@ -177,8 +312,13 @@ def a():
 # College Data Collection Route [Delete_User]: DELETE
 @app.route('/delete_user/<int:sno>')
 def delete_user(sno):
-	deleteMongoDocument(sno, collection)
-	return redirect('/index')
+  user = auth.current_user
+  name = user.display_name
+  email = user.email
+  now=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+  CRUD_log(name, email, now, operation="DELETE USER")
+  deleteMongoDocument(sno, collection)
+  return redirect('/index')
 
 
 # College Data Collection Route [Update]: UPDATE
@@ -1100,4 +1240,8 @@ def comments():
 if __name__ == "__main__":
 	# app.run(debug=True)
 	# Thread(target=new_thread, daemon=True).start()
-	app.run(host='0.0.0.0', port=81)
+
+  with app.app_context():
+        db.create_all()
+    
+  app.run(host='0.0.0.0', port=81, debug=True)
